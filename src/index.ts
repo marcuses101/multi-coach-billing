@@ -1,7 +1,4 @@
-import { printThis } from "module";
+/* eslint-disable @typescript-eslint/no-unused-vars */
+import { init } from "init";
 
-function main() {
-  console.log("this is a test");
-  let test = "true";
-  printThis(test);
-}
+const importedFunctions = [init];

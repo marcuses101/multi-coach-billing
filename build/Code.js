@@ -1,13 +1,9 @@
 "use strict";
 
-// src/module.ts
-function printThis(input) {
-  console.log(input);
+// src/init.ts
+function init(test) {
+  console.log(test);
 }
 
 // src/index.ts
-function main() {
-  console.log("this is a test");
-  let test = "true";
-  printThis(test);
-}
+var importedFunctions = [init];

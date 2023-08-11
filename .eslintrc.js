@@ -3,7 +3,7 @@ module.exports = {
     browser: true,
     es2021: true,
   },
-  extends: ["airbnb-base", "airbnb-typescript/base"],
+  extends: ["airbnb-base", "airbnb-typescript/base", "prettier"],
   overrides: [
     {
       env: {
@@ -23,7 +23,8 @@ module.exports = {
   },
   plugins: ["@typescript-eslint"],
   rules: {
-    "@typescript-eslint/quotes": "off",
     "import/prefer-default-export": "off",
+    "no-underscore-dangle": "off",
+    "@typescript-eslint/naming-convention": "off",
   },
 };
