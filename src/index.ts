@@ -1,4 +1,5 @@
 /* eslint-disable @typescript-eslint/no-unused-vars */
-import { init } from "init";
+import { initialSpreadsheetSetup } from "initialSpreadsheetSetup";
+import { onOpen } from "ui";
 
-const importedFunctions = [init];
+const importedFunctions = [initialSpreadsheetSetup, onOpen];
