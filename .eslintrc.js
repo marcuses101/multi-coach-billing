@@ -21,10 +21,12 @@ module.exports = {
     sourceType: "module",
     project: "./tsconfig.json",
   },
-  plugins: ["@typescript-eslint"],
+  plugins: ["@typescript-eslint", "import"],
   rules: {
     "import/prefer-default-export": "off",
+    "import/no-cycle": "error",
     "no-underscore-dangle": "off",
     "@typescript-eslint/naming-convention": "off",
   },
+  ignorePatterns: [".eslintrc.js"],
 };

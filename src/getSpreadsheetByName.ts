@@ -1,4 +1,4 @@
-import { SheetName } from "initialSpreadsheetSetup";
+import type { SheetName } from "./initialSpreadsheetSetup";
 
 export function getSheetByName(
   name: SheetName

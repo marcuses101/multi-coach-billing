@@ -1,25 +1,10 @@
-import { addCoach } from "Sheets/CoachInfo";
-import { initialSpreadsheetSetup } from "initialSpreadsheetSetup";
-
-const DEFAULT_SHEET_NAME = "Sheet1";
-
-function reset() {
-  const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  const currentSheets = spreadsheet
-    .getSheets()
-    .filter((sheet) => sheet.getName() !== DEFAULT_SHEET_NAME);
-  if (!spreadsheet.getSheetByName(DEFAULT_SHEET_NAME)) {
-    spreadsheet.insertSheet(DEFAULT_SHEET_NAME);
-  }
-  currentSheets.forEach((sheet) => {
-    spreadsheet.deleteSheet(sheet);
-  });
-}
-
-function resetAndInit() {
-  reset();
-  initialSpreadsheetSetup();
-}
+import { addCoach } from "./Sheets/CoachInfo";
+import { syncLessons } from "./Sheets/LessonLogs";
+import { addSkater } from "./Sheets/StudentInfo";
+import {
+  initialSpreadsheetSetup,
+  resetAndInit,
+} from "./initialSpreadsheetSetup";
 
 export function onOpen() {
   const ui = SpreadsheetApp.getUi();
@@ -27,5 +12,7 @@ export function onOpen() {
     .addItem("Initialize Spreadsheet", initialSpreadsheetSetup.name)
     .addItem("Reset and Initialize Spreadsheet", resetAndInit.name) // TODO REMOVE BEFORE HANDOFF
     .addItem("Add Coach", addCoach.name)
+    .addItem("Add Skater", addSkater.name)
+    .addItem("Sync Lessons", syncLessons.name)
     .addToUi();
 }

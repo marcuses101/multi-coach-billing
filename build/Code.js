@@ -10,6 +10,21 @@ function getSheetByName(name) {
   return sheet;
 }
 
+// src/setupStandardSheet.ts
+function setupStandardSheet(sheet, sheetConfig) {
+  sheet.getRange("A1:Z").applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY);
+  const numberOfColumns = sheetConfig.columnConfigurations.length;
+  sheet.deleteColumns(
+    numberOfColumns + 1,
+    sheet.getMaxColumns() - numberOfColumns
+  );
+  const headers = sheetConfig.columnConfigurations.map(
+    ({ headerName = "" }) => headerName
+  );
+  sheet.getRange("1:1").setFontWeight("bold").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
+  sheet.getRange(1, 1, 1, numberOfColumns).setValues([headers]);
+}
+
 // src/Sheets/CoachInfo.ts
 var CoachInfoSheetConfig = {
   name: "Coach Info",
@@ -22,12 +37,41 @@ var CoachInfoSheetConfig = {
     { headerName: "Sheet Id", field: "logSheetId" }
   ]
 };
+function getCoaches() {
+  const coachSheet = getSheetByName("Coach Info");
+  const coachSheetData = coachSheet.getDataRange().getValues().slice(1);
+  const coaches = coachSheetData.reduce((coachArray, currentRow) => {
+    if (currentRow.some((entry) => !entry)) {
+      return coachArray;
+    }
+    const coach = {
+      id: currentRow[0],
+      firstName: currentRow[1],
+      lastName: currentRow[2],
+      hourlyRateInDollars: currentRow[3],
+      logSheetUrl: currentRow[4],
+      logSheetId: currentRow[5]
+    };
+    coachArray.push(coach);
+    return coachArray;
+  }, []);
+  return coaches;
+}
 var LessonLogSheetConfig = {
   name: "Lesson Log",
   columnConfigurations: [
     { headerName: "Date", field: "date" },
     { headerName: "Minutes", field: "lessonTimeInMinutes" },
     { headerName: "Skaters", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
     { headerName: "", field: "skaters" },
     { headerName: "", field: "skaters" },
     { headerName: "", field: "skaters" },
@@ -58,7 +102,7 @@ function addCoachPrompt_() {
 }
 function addCoach() {
   const { firstName, lastName, hourlyRateInDollars } = addCoachPrompt_();
-  const coachSheet = getSheetByName(CoachInfoSheetConfig.name);
+  const coachSheet = getSheetByName("Coach Info");
   const { logSheetId, logSheetUrl } = createCoachLogSheet_(firstName, lastName);
   const id = Utilities.getUuid();
   coachSheet.appendRow([
@@ -71,40 +115,141 @@ function addCoach() {
   ]);
 }
 
+// src/Sheets/CoachSummary.ts
+var CoachSummarySheetConfig = {
+  name: "Coaches Summary",
+  locked: true,
+  columnConfigurations: [{ headerName: "Coach Name", field: "coachName" }]
+};
+
+// src/Sheets/InvoiceHistory.ts
+var InvoiceHistorySheetConfig = {
+  name: "Invoice History",
+  columnConfigurations: [
+    { headerName: "Invoice Id", field: "invoiceId" },
+    { headerName: "Date", field: "date" },
+    { headerName: "Student Name", field: "studentName" },
+    { headerName: "Amount", field: "amount" },
+    { headerName: "Invoice Link", field: "invoiceLink" }
+  ]
+};
+
+// src/Sheets/Payments.ts
+var PaymentsSheetConfig = {
+  name: "Payments",
+  columnConfigurations: [
+    { headerName: "Skater Name", field: "skaterName" },
+    { headerName: "Amount", field: "amountPayedInDollars" },
+    { headerName: "Date Received", field: "date" },
+    { headerName: "Additional Info", field: "additionalInfo" }
+  ]
+};
+
+// src/Sheets/SkatersSummary.ts
+var SkatersSummarySheetConfig = {
+  name: "Skaters Summary",
+  locked: true,
+  columnConfigurations: [
+    { headerName: "Student", field: "student" },
+    { headerName: "Lessons Total", field: "lessonsTotal" },
+    { headerName: "Extras Total", field: "extrasTotal" },
+    { headerName: "Sub Total", field: "subTotal" },
+    { headerName: "Payments Total", field: "paymentsTotal" },
+    { headerName: "Charges Total", field: "chargesTotal" },
+    { headerName: "Previous Balance", field: "previousBalance" },
+    { headerName: "Grand Total", field: "grandTotal" }
+  ]
+};
+
+// src/Sheets/StudentInfo.ts
+var StudentInfoSheetConfig = {
+  name: "Student Info",
+  columnConfigurations: [
+    { headerName: "Id", field: "id" },
+    { headerName: "First Name", field: "firstName" },
+    { headerName: "Last Name", field: "lastName" },
+    { headerName: "Email", field: "email" },
+    { headerName: "Is Student Active", field: "isActive" }
+  ]
+};
+function promptForStudentInfo_() {
+  const ui = SpreadsheetApp.getUi();
+  const firstName = ui.prompt("Enter student's firstName").getResponseText();
+  const lastName = ui.prompt("Enter student's last name").getResponseText();
+  const email = ui.prompt("Enter student's email address").getResponseText();
+  return { firstName, lastName, email };
+}
+function addSkater() {
+  const sheet = getSheetByName("Student Info");
+  const { firstName, lastName, email } = promptForStudentInfo_();
+  const id = Utilities.getUuid();
+  sheet.appendRow([id, firstName, lastName, email, true]);
+}
+
+// src/Sheets/LessonLogs.ts
+var LessonLogsSheetConfig = {
+  name: "Lesson Logs",
+  locked: true,
+  columnConfigurations: [
+    { headerName: "Coach Name", field: "coachName" },
+    { headerName: "Coach Id", field: "coachId" },
+    { headerName: "Date", field: "date" },
+    { headerName: "Minutes", field: "lessonTimeInMinutes" },
+    { headerName: "Skaters", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" }
+  ]
+};
+function syncLessons() {
+  const coaches = getCoaches();
+  const allLessonData = coaches.flatMap((coach) => {
+    const coachName = `${coach.firstName} ${coach.lastName}`;
+    const spreadsheet = SpreadsheetApp.openById(coach.logSheetId);
+    const coachLessonSheet = spreadsheet.getSheets()[0];
+    const numberOfRows2 = coachLessonSheet.getLastRow() - 1;
+    const numberOfColumns2 = coachLessonSheet.getMaxColumns();
+    const rows = spreadsheet.getSheets()[0].getRange(2, 1, numberOfRows2, numberOfColumns2).getValues();
+    const filledRows = rows.reduce((acc, row) => {
+      const [date, minutes, ...skaters] = row;
+      const isValidRow = date && minutes && skaters.some((skater) => Boolean(skater));
+      if (!isValidRow) {
+        return acc;
+      }
+      acc.push([coachName, coach.id, date, minutes, ...skaters]);
+      return acc;
+    }, []);
+    return filledRows;
+  });
+  const lessonLogSheet = getSheetByName("Lesson Logs");
+  lessonLogSheet.getRange("A2:Z").clearContent();
+  const numberOfRows = allLessonData.length;
+  if (numberOfRows === 0)
+    return;
+  const numberOfColumns = allLessonData[0].length;
+  lessonLogSheet.getRange(2, 1, numberOfRows, numberOfColumns).setValues(allLessonData);
+}
+
 // src/initialSpreadsheetSetup.ts
 var config = [
-  {
-    name: "Student Info",
-    columnConfigurations: [
-      { headerName: "Id", field: "id" },
-      { headerName: "First Name", field: "firstName" },
-      { headerName: "Last Name", field: "lastName" }
-    ]
-  },
+  StudentInfoSheetConfig,
   CoachInfoSheetConfig,
-  {
-    name: "Payments",
-    columnConfigurations: [
-      { headerName: "Client", field: "client" },
-      { headerName: "Amount", field: "amountPayed" },
-      { headerName: "Date Received", field: "date" },
-      { headerName: "Amount", field: "amountPayed" }
-    ]
-  },
-  {
-    name: "Summary",
-    locked: true,
-    columnConfigurations: [
-      { headerName: "Student", field: "student" },
-      { headerName: "Lessons Total", field: "lessonsTotal" },
-      { headerName: "Extras Total", field: "extrasTotal" },
-      { headerName: "Sub Total", field: "subTotal" },
-      { headerName: "Payments Total", field: "paymentsTotal" },
-      { headerName: "Charges Total", field: "chargesTotal" },
-      { headerName: "Previous Balance", field: "previousBalance" },
-      { headerName: "Grand Total", field: "grandTotal" }
-    ]
-  },
+  PaymentsSheetConfig,
+  CoachSummarySheetConfig,
+  SkatersSummarySheetConfig,
   {
     name: "Bill Preview",
     setup: (sheet) => {
@@ -115,32 +260,12 @@ var config = [
     setup: (sheet) => {
     }
   },
-  {
-    name: "Invoice History",
-    columnConfigurations: [
-      { headerName: "Invoice Id", field: "invoiceId" },
-      { headerName: "Date", field: "date" },
-      { headerName: "Student Name", field: "studentName" },
-      { headerName: "Amount", field: "amount" },
-      { headerName: "Invoice Link", field: "invoiceLink" }
-    ]
-  }
+  InvoiceHistorySheetConfig,
+  LessonLogsSheetConfig
 ];
+var DEFAULT_SHEET_NAME = "Sheet1";
 function setupSpecialSheet(sheet, sheetConfig) {
   sheetConfig.setup(sheet);
-}
-function setupStandardSheet(sheet, sheetConfig) {
-  sheet.getRange("A1:Z").applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY);
-  const numberOfColumns = sheetConfig.columnConfigurations.length;
-  sheet.deleteColumns(
-    numberOfColumns + 1,
-    sheet.getMaxColumns() - numberOfColumns
-  );
-  const headers = sheetConfig.columnConfigurations.map(
-    ({ headerName = "" }) => headerName
-  );
-  sheet.getRange("1:1").setFontWeight("bold").setWrapStrategy(SpreadsheetApp.WrapStrategy.WRAP);
-  sheet.getRange(1, 1, 1, numberOfColumns).setValues([headers]);
 }
 function initialSpreadsheetSetup() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -155,10 +280,11 @@ function initialSpreadsheetSetup() {
     }
     setupStandardSheet(currentSheet, sheetConfig);
   });
+  const defaultSheet = spreadsheet.getSheetByName(DEFAULT_SHEET_NAME);
+  if (defaultSheet) {
+    spreadsheet.deleteSheet(defaultSheet);
+  }
 }
-
-// src/ui.ts
-var DEFAULT_SHEET_NAME = "Sheet1";
 function reset() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
   const currentSheets = spreadsheet.getSheets().filter((sheet) => sheet.getName() !== DEFAULT_SHEET_NAME);
@@ -173,9 +299,11 @@ function resetAndInit() {
   reset();
   initialSpreadsheetSetup();
 }
+
+// src/ui.ts
 function onOpen() {
   const ui = SpreadsheetApp.getUi();
-  ui.createMenu("Billing Actions").addItem("Initialize Spreadsheet", initialSpreadsheetSetup.name).addItem("Reset and Initialize Spreadsheet", resetAndInit.name).addItem("Add Coach", addCoach.name).addToUi();
+  ui.createMenu("Billing Actions").addItem("Initialize Spreadsheet", initialSpreadsheetSetup.name).addItem("Reset and Initialize Spreadsheet", resetAndInit.name).addItem("Add Coach", addCoach.name).addItem("Add Skater", addSkater.name).addItem("Sync Lessons", syncLessons.name).addToUi();
 }
 
 // src/index.ts

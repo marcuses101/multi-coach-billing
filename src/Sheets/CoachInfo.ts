@@ -1,8 +1,6 @@
-import { getSheetByName } from "getSpreadsheetByName";
-import {
-  StandardSheetConfig,
-  setupStandardSheet,
-} from "initialSpreadsheetSetup";
+import { getSheetByName } from "../getSpreadsheetByName";
+import { StandardSheetConfig } from "../defs";
+import { setupStandardSheet } from "../setupStandardSheet";
 
 export const CoachInfoSheetConfig = {
   name: "Coach Info",
@@ -16,12 +14,47 @@ export const CoachInfoSheetConfig = {
   ],
 } as const satisfies StandardSheetConfig;
 
+type CoachInfoColumns =
+  (typeof CoachInfoSheetConfig.columnConfigurations)[number]["field"];
+
+type Coach = Record<CoachInfoColumns, any>;
+
+export function getCoaches(): Coach[] {
+  const coachSheet = getSheetByName("Coach Info");
+  const coachSheetData = coachSheet.getDataRange().getValues().slice(1);
+  const coaches: Coach[] = coachSheetData.reduce((coachArray, currentRow) => {
+    if (currentRow.some((entry) => !entry)) {
+      return coachArray;
+    }
+    const coach: Coach = {
+      id: currentRow[0],
+      firstName: currentRow[1],
+      lastName: currentRow[2],
+      hourlyRateInDollars: currentRow[3],
+      logSheetUrl: currentRow[4],
+      logSheetId: currentRow[5],
+    };
+    coachArray.push(coach);
+    return coachArray;
+  }, [] as Coach[]);
+  return coaches;
+}
+
 const LessonLogSheetConfig: StandardSheetConfig = {
   name: "Lesson Log",
   columnConfigurations: [
     { headerName: "Date", field: "date" },
     { headerName: "Minutes", field: "lessonTimeInMinutes" },
     { headerName: "Skaters", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
+    { headerName: "", field: "skaters" },
     { headerName: "", field: "skaters" },
     { headerName: "", field: "skaters" },
     { headerName: "", field: "skaters" },
@@ -64,7 +97,7 @@ export function addCoachPrompt_(): {
 
 export function addCoach() {
   const { firstName, lastName, hourlyRateInDollars } = addCoachPrompt_();
-  const coachSheet = getSheetByName(CoachInfoSheetConfig.name);
+  const coachSheet = getSheetByName("Coach Info");
   const { logSheetId, logSheetUrl } = createCoachLogSheet_(firstName, lastName);
   const id = Utilities.getUuid();
   coachSheet.appendRow([
