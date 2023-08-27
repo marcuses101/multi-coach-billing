@@ -2,6 +2,14 @@ import { getCoaches } from "./CoachInfo";
 import type { StandardSheetConfig } from "../defs";
 import { getSheetByName } from "../getSpreadsheetByName";
 
+export type LessonLogEntry = {
+  coachName: string;
+  coachId: string;
+  date: Date;
+  lessonDurationInMinutes: number;
+  skaters: string[];
+};
+
 export const LessonLogsSheetConfig = {
   name: "Lesson Logs",
   locked: true,
@@ -9,7 +17,7 @@ export const LessonLogsSheetConfig = {
     { headerName: "Coach Name", field: "coachName" },
     { headerName: "Coach Id", field: "coachId" },
     { headerName: "Date", field: "date" },
-    { headerName: "Minutes", field: "lessonTimeInMinutes" },
+    { headerName: "Minutes", field: "lessonDurationInMinutes" },
     { headerName: "Skaters", field: "skaters" },
     { headerName: "", field: "skaters" },
     { headerName: "", field: "skaters" },
@@ -28,7 +36,16 @@ export const LessonLogsSheetConfig = {
     { headerName: "", field: "skaters" },
     { headerName: "", field: "skaters" },
   ],
-} as const satisfies StandardSheetConfig;
+} as const satisfies StandardSheetConfig<LessonLogEntry>;
+
+export type ProcessedLessonEntry = [
+  lessonId: string,
+  date: Date,
+  coachId: string,
+  skaterId: string,
+  lessonDurationInMinutes: number,
+  lessonFeeInCents: number
+];
 
 export function syncLessons(): void {
   const coaches = getCoaches();

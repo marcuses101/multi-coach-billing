@@ -1,6 +1,13 @@
 import { StandardSheetConfig } from "../defs";
 
-export const PaymentsSheetConfig = {
+interface PaymentInputEntry {
+  skaterName: string;
+  amountPayedInDollars: number;
+  date: Date;
+  additionalInfo: string;
+}
+
+export const SkaterPaymentsSheetConfig = {
   name: "Payments",
   columnConfigurations: [
     { headerName: "Skater Name", field: "skaterName" },
@@ -8,4 +15,4 @@ export const PaymentsSheetConfig = {
     { headerName: "Date Received", field: "date" },
     { headerName: "Additional Info", field: "additionalInfo" },
   ],
-} as const satisfies StandardSheetConfig;
+} as const satisfies StandardSheetConfig<PaymentInputEntry>;

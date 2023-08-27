@@ -2,41 +2,34 @@
 import { CoachInfoSheetConfig } from "./Sheets/CoachInfo";
 import { CoachSummarySheetConfig } from "./Sheets/CoachSummary";
 import { InvoiceHistorySheetConfig } from "./Sheets/InvoiceHistory";
-import { PaymentsSheetConfig } from "./Sheets/Payments";
+import { SkaterPaymentsSheetConfig } from "./Sheets/SkaterPayments";
 import { SkatersSummarySheetConfig } from "./Sheets/SkatersSummary";
-import { StudentInfoSheetConfig } from "./Sheets/StudentInfo";
+import { SkaterInfoSheetConfig } from "./Sheets/SkaterInfo";
 import { setupStandardSheet } from "./setupStandardSheet";
 import { LessonLogsSheetConfig } from "./Sheets/LessonLogs";
-import { SpecialSheetConfig, StandardSheetConfig } from "./defs";
+import { StandardSheetConfig } from "./defs";
+import { SkaterBalanceLogSheetConfig } from "./Sheets/SkaterBalanceLog";
+import { CoachBalanceLogSheetConfig } from "./Sheets/CoachBalanceLog";
+import { BillPreviewSheetConfig } from "./Sheets/BillPreview";
+import { EmailTemplateSheetConfig } from "./Sheets/EmailTemplate";
 
 export const config = [
-  StudentInfoSheetConfig,
+  SkaterInfoSheetConfig,
   CoachInfoSheetConfig,
-  PaymentsSheetConfig,
+  SkaterPaymentsSheetConfig,
+  SkaterBalanceLogSheetConfig,
+  CoachBalanceLogSheetConfig,
   CoachSummarySheetConfig,
   SkatersSummarySheetConfig,
-  {
-    name: "Bill Preview",
-    setup: (sheet: GoogleAppsScript.Spreadsheet.Sheet) => {},
-  },
-  {
-    name: "Email Template",
-    setup: (sheet: GoogleAppsScript.Spreadsheet.Sheet) => {},
-  },
+  BillPreviewSheetConfig,
+  EmailTemplateSheetConfig,
   InvoiceHistorySheetConfig,
   LessonLogsSheetConfig,
-] as const satisfies ReadonlyArray<StandardSheetConfig | SpecialSheetConfig>;
+] as const satisfies ReadonlyArray<StandardSheetConfig<any>>;
 
 export type SheetName = (typeof config)[number]["name"];
 
 export const DEFAULT_SHEET_NAME = "Sheet1";
-
-function setupSpecialSheet(
-  sheet: GoogleAppsScript.Spreadsheet.Sheet,
-  sheetConfig: SpecialSheetConfig
-) {
-  sheetConfig.setup(sheet);
-}
 
 export function initialSpreadsheetSetup() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
@@ -45,12 +38,14 @@ export function initialSpreadsheetSetup() {
     sheet: spreadsheet.insertSheet(sheetConfig.name),
   }));
   sheets.forEach(({ sheet: currentSheet, sheetConfig }) => {
-    if ("setup" in sheetConfig) {
-      setupSpecialSheet(currentSheet, sheetConfig);
-      return;
+    if ("columnConfigurations" in sheetConfig) {
+      setupStandardSheet(currentSheet, sheetConfig);
     }
-    setupStandardSheet(currentSheet, sheetConfig);
+    if ("setup" in sheetConfig && typeof sheetConfig.setup === "function") {
+      sheetConfig.setup(currentSheet);
+    }
   });
+
   const defaultSheet = spreadsheet.getSheetByName(DEFAULT_SHEET_NAME);
   if (defaultSheet) {
     spreadsheet.deleteSheet(defaultSheet);

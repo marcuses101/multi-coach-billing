@@ -1,6 +1,6 @@
 import { addCoach } from "./Sheets/CoachInfo";
 import { syncLessons } from "./Sheets/LessonLogs";
-import { addSkater } from "./Sheets/StudentInfo";
+import { addSkater } from "./Sheets/SkaterInfo";
 import {
   initialSpreadsheetSetup,
   resetAndInit,

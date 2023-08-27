@@ -1,5 +1,13 @@
 import { StandardSheetConfig } from "../defs";
 
+interface InvoiceHistoryEntry {
+  invoiceId: string;
+  date: Date;
+  studentName: string;
+  amount: string;
+  invoiceLink: string;
+}
+
 export const InvoiceHistorySheetConfig = {
   name: "Invoice History",
   columnConfigurations: [
@@ -9,4 +17,4 @@ export const InvoiceHistorySheetConfig = {
     { headerName: "Amount", field: "amount" },
     { headerName: "Invoice Link", field: "invoiceLink" },
   ],
-} as const satisfies StandardSheetConfig;
+} as const satisfies StandardSheetConfig<InvoiceHistoryEntry>;

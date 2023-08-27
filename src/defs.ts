@@ -1,16 +1,11 @@
-export interface ColumnConfiguration {
+export interface ColumnConfiguration<T extends Record<string, any>> {
   headerName?: string;
-  field: string;
+  field: keyof T;
 }
 
-export interface SpecialSheetConfig {
+export interface StandardSheetConfig<T extends Record<string, any>> {
   name: string;
   locked?: boolean;
-  setup: (sheet: GoogleAppsScript.Spreadsheet.Sheet) => void;
-}
-
-export interface StandardSheetConfig {
-  name: string;
-  locked?: boolean;
-  columnConfigurations: ReadonlyArray<ColumnConfiguration>;
+  columnConfigurations?: ReadonlyArray<ColumnConfiguration<T>>;
+  setup?: (sheet: GoogleAppsScript.Spreadsheet.Sheet) => void;
 }

@@ -1,6 +1,16 @@
 import { getSheetByName } from "../getSpreadsheetByName";
 import { StandardSheetConfig } from "../defs";
 import { setupStandardSheet } from "../setupStandardSheet";
+import { LessonInputSheetConfig } from "./LessonInput";
+
+export interface Coach {
+  id: string;
+  firstName: string;
+  lastName: string;
+  hourlyRateInDollars: number;
+  logSheetUrl: string;
+  logSheetId: string;
+}
 
 export const CoachInfoSheetConfig = {
   name: "Coach Info",
@@ -12,12 +22,7 @@ export const CoachInfoSheetConfig = {
     { headerName: "Log Sheet", field: "logSheetUrl" },
     { headerName: "Sheet Id", field: "logSheetId" },
   ],
-} as const satisfies StandardSheetConfig;
-
-type CoachInfoColumns =
-  (typeof CoachInfoSheetConfig.columnConfigurations)[number]["field"];
-
-type Coach = Record<CoachInfoColumns, any>;
+} as const satisfies StandardSheetConfig<Coach>;
 
 export function getCoaches(): Coach[] {
   const coachSheet = getSheetByName("Coach Info");
@@ -40,31 +45,6 @@ export function getCoaches(): Coach[] {
   return coaches;
 }
 
-const LessonLogSheetConfig: StandardSheetConfig = {
-  name: "Lesson Log",
-  columnConfigurations: [
-    { headerName: "Date", field: "date" },
-    { headerName: "Minutes", field: "lessonTimeInMinutes" },
-    { headerName: "Skaters", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-    { headerName: "", field: "skaters" },
-  ],
-};
-
 function createCoachLogSheet_(
   firstName: string,
   lastName: string
@@ -72,8 +52,8 @@ function createCoachLogSheet_(
   const fullName = `lesson_log-${firstName}_${lastName}`;
   const newSpreadsheet = SpreadsheetApp.create(fullName);
   const logSheet = newSpreadsheet.getSheets()[0];
-  logSheet.setName(LessonLogSheetConfig.name);
-  setupStandardSheet(logSheet, LessonLogSheetConfig);
+  logSheet.setName(LessonInputSheetConfig.name);
+  setupStandardSheet(logSheet, LessonInputSheetConfig);
   return {
     logSheetId: newSpreadsheet.getId(),
     logSheetUrl: newSpreadsheet.getUrl(),

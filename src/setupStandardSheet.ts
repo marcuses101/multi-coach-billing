@@ -1,8 +1,8 @@
 import { StandardSheetConfig } from "./defs";
 
-export function setupStandardSheet(
+export function setupStandardSheet<T extends Record<string, any> = any>(
   sheet: GoogleAppsScript.Spreadsheet.Sheet,
-  sheetConfig: StandardSheetConfig
+  sheetConfig: StandardSheetConfig<T>
 ) {
   sheet
     .getRange("A1:Z")
