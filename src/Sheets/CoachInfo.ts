@@ -1,6 +1,6 @@
 import { getSheetByName } from "../getSpreadsheetByName";
 import { StandardSheetConfig } from "../defs";
-import { setupStandardSheet } from "../setupStandardSheet";
+import { setupSheetColumns } from "../setupStandardSheet";
 import { LessonInputSheetConfig } from "./LessonInput";
 
 export interface Coach {
@@ -53,7 +53,7 @@ function createCoachLogSheet_(
   const newSpreadsheet = SpreadsheetApp.create(fullName);
   const logSheet = newSpreadsheet.getSheets()[0];
   logSheet.setName(LessonInputSheetConfig.name);
-  setupStandardSheet(logSheet, LessonInputSheetConfig);
+  setupSheetColumns(logSheet, LessonInputSheetConfig);
   return {
     logSheetId: newSpreadsheet.getId(),
     logSheetUrl: newSpreadsheet.getUrl(),

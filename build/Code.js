@@ -11,7 +11,7 @@ function getSheetByName(name) {
 }
 
 // src/setupStandardSheet.ts
-function setupStandardSheet(sheet, sheetConfig) {
+function setupSheetColumns(sheet, sheetConfig) {
   sheet.getRange("A1:Z").applyRowBanding(SpreadsheetApp.BandingTheme.LIGHT_GREY);
   const numberOfColumns = sheetConfig.columnConfigurations.length;
   sheet.deleteColumns(
@@ -88,7 +88,7 @@ function createCoachLogSheet_(firstName, lastName) {
   const newSpreadsheet = SpreadsheetApp.create(fullName);
   const logSheet = newSpreadsheet.getSheets()[0];
   logSheet.setName(LessonInputSheetConfig.name);
-  setupStandardSheet(logSheet, LessonInputSheetConfig);
+  setupSheetColumns(logSheet, LessonInputSheetConfig);
   return {
     logSheetId: newSpreadsheet.getId(),
     logSheetUrl: newSpreadsheet.getUrl()
@@ -316,7 +316,7 @@ function initialSpreadsheetSetup() {
   }));
   sheets.forEach(({ sheet: currentSheet, sheetConfig }) => {
     if ("columnConfigurations" in sheetConfig) {
-      setupStandardSheet(currentSheet, sheetConfig);
+      setupSheetColumns(currentSheet, sheetConfig);
     }
     if ("setup" in sheetConfig && typeof sheetConfig.setup === "function") {
       sheetConfig.setup(currentSheet);

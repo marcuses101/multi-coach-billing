@@ -5,15 +5,15 @@ import { InvoiceHistorySheetConfig } from "./Sheets/InvoiceHistory";
 import { SkaterPaymentsSheetConfig } from "./Sheets/SkaterPayments";
 import { SkatersSummarySheetConfig } from "./Sheets/SkatersSummary";
 import { SkaterInfoSheetConfig } from "./Sheets/SkaterInfo";
-import { setupStandardSheet } from "./setupStandardSheet";
+import { setupSheetColumns } from "./setupStandardSheet";
 import { LessonLogsSheetConfig } from "./Sheets/LessonLogs";
-import { StandardSheetConfig } from "./defs";
+import { SpecialSheetConfig, StandardSheetConfig } from "./defs";
 import { SkaterBalanceLogSheetConfig } from "./Sheets/SkaterBalanceLog";
 import { CoachBalanceLogSheetConfig } from "./Sheets/CoachBalanceLog";
 import { BillPreviewSheetConfig } from "./Sheets/BillPreview";
 import { EmailTemplateSheetConfig } from "./Sheets/EmailTemplate";
 
-export const config = [
+export const sheetConfigs = [
   SkaterInfoSheetConfig,
   CoachInfoSheetConfig,
   SkaterPaymentsSheetConfig,
@@ -25,21 +25,23 @@ export const config = [
   EmailTemplateSheetConfig,
   InvoiceHistorySheetConfig,
   LessonLogsSheetConfig,
-] as const satisfies ReadonlyArray<StandardSheetConfig<any>>;
+] as const satisfies ReadonlyArray<
+  StandardSheetConfig<any> | SpecialSheetConfig
+>;
 
-export type SheetName = (typeof config)[number]["name"];
+export type SheetName = (typeof sheetConfigs)[number]["name"];
 
 export const DEFAULT_SHEET_NAME = "Sheet1";
 
 export function initialSpreadsheetSetup() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  const sheets = config.map((sheetConfig) => ({
+  const sheets = sheetConfigs.map((sheetConfig) => ({
     sheetConfig,
     sheet: spreadsheet.insertSheet(sheetConfig.name),
   }));
   sheets.forEach(({ sheet: currentSheet, sheetConfig }) => {
     if ("columnConfigurations" in sheetConfig) {
-      setupStandardSheet(currentSheet, sheetConfig);
+      setupSheetColumns(currentSheet, sheetConfig);
     }
     if ("setup" in sheetConfig && typeof sheetConfig.setup === "function") {
       sheetConfig.setup(currentSheet);

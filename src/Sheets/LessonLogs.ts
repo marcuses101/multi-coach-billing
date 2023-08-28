@@ -38,6 +38,11 @@ export const LessonLogsSheetConfig = {
   ],
 } as const satisfies StandardSheetConfig<LessonLogEntry>;
 
+export function getLessonLogEntries() {
+  const sheet = getSheetByName(LessonLogsSheetConfig.name);
+  const data = sheet.getDataRange().getValues().slice(1);
+}
+
 export type ProcessedLessonEntry = [
   lessonId: string,
   date: Date,

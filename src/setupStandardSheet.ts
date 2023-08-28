@@ -1,6 +1,6 @@
 import { StandardSheetConfig } from "./defs";
 
-export function setupStandardSheet<T extends Record<string, any> = any>(
+export function setupSheetColumns<T extends Record<string, any> = any>(
   sheet: GoogleAppsScript.Spreadsheet.Sheet,
   sheetConfig: StandardSheetConfig<T>
 ) {
