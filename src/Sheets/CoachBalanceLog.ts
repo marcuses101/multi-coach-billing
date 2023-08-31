@@ -12,8 +12,8 @@ interface CoachBalanceSheetEntry {
 export const CoachBalanceLogSheetConfig = {
   name: "Coach Balance Log",
   columnConfigurations: [
-    { headerName: "Skater Id", field: "coachId" },
-    { headerName: "Skater Name", field: "coachName" },
+    { headerName: "Coach Id", field: "coachId" },
+    { headerName: "Coach Name", field: "coachName" },
     { headerName: "Date", field: "date" },
     { headerName: "Amount", field: "amountInCents" },
     { headerName: "Type", field: "type" },

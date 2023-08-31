@@ -226,6 +226,10 @@ var LessonLogsSheetConfig = {
     { headerName: "", field: "skaters" }
   ]
 };
+function getLessonLogEntries() {
+  const sheet = getSheetByName(LessonLogsSheetConfig.name);
+  const data = sheet.getDataRange().getValues().slice(1);
+}
 function syncLessons() {
   const coaches = getCoaches();
   const allLessonData = coaches.flatMap((coach) => {
@@ -272,8 +276,8 @@ var SkaterBalanceLogSheetConfig = {
 var CoachBalanceLogSheetConfig = {
   name: "Coach Balance Log",
   columnConfigurations: [
-    { headerName: "Skater Id", field: "coachId" },
-    { headerName: "Skater Name", field: "coachName" },
+    { headerName: "Coach Id", field: "coachId" },
+    { headerName: "Coach Name", field: "coachName" },
     { headerName: "Date", field: "date" },
     { headerName: "Amount", field: "amountInCents" },
     { headerName: "Type", field: "type" },
@@ -287,14 +291,114 @@ var BillPreviewSheetConfig = {
   setup: placeholderSheetSetup
 };
 
+// src/colorConstants.ts
+var WHITE = "#ffffff";
+var LIGHT_GREY = "#cccccc";
+var DARK_GREY = "#999999";
+var BLACK = "#000000";
+
+// src/styleRangeAsHeader.ts
+function styleRangeAsHeader(range) {
+  range.setBackground(DARK_GREY).setFontColor(WHITE).setFontWeight("bold").setFontSize(12);
+}
+
 // src/Sheets/EmailTemplate.ts
+var POSSIBLE_TEMPLATE_VARIABLES = [
+  "firstName",
+  "lastName",
+  "email",
+  "date",
+  "currentAmount",
+  "previousBalance",
+  "grandTotal",
+  "companyName",
+  "companyStreet",
+  "companyTown",
+  "companyProvince",
+  "companyCountry"
+];
+var PREVIEW_EXAMPLE_VALUES = {
+  firstName: "Tester",
+  lastName: "McTesterson",
+  email: "testing@testing.com",
+  date: "01/01/2023",
+  currentAmount: 250.5,
+  previousBalance: 0,
+  grandTotal: 500.5,
+  companyName: "Example Corp.",
+  companyStreet: "Business Street",
+  companyTown: "Business Town",
+  companyProvince: "Ontario",
+  companyCountry: "Canada"
+};
+var DEFAULT_EMAIL_SUBJECT_TEMPLATE = "Figure Skating Bill: {{firstName}} {{lastName}} {{date}}";
+var DEFAULT_EMAIL_BODY_TEMPLATE = `Hello,
+
+The balance of your account is {{grandTotal}}.
+Please see the attached invoice for full details.
+
+Thank you,
+{{companyName}}
+{{companyStreet}}, {{companyTown}}`;
+var EMAIL_TEMPLATE_SHEET_INFO = `Use this sheet to customize the email that will be sent out along with the bill.
+Any value listed in the "Variables" column is available to use in template.
+Variables will be replaced with the actual info in the email, similar to what is seen in the "Preview" Cells`;
+function mustache_(string, obj) {
+  const regex = /{{2}([^{}]*)}{2}/g;
+  return string.replace(regex, (substring, match) => {
+    const replaceValue = obj[match] ?? substring;
+    return String(replaceValue);
+  });
+}
+function PreviewTemplate(input) {
+  return mustache_(input, PREVIEW_EXAMPLE_VALUES);
+}
 var EmailTemplateSheetConfig = {
   name: "Email Template",
-  setup: placeholderSheetSetup
+  setup: (sheet) => {
+    const templateTable = [
+      ["Subject Template", "Body Template"],
+      [DEFAULT_EMAIL_SUBJECT_TEMPLATE, DEFAULT_EMAIL_BODY_TEMPLATE],
+      ["Subject Preview", "Body Preview"],
+      [
+        `=${PreviewTemplate.name}(INDIRECT("R[-2]C[0]",false))`,
+        `=${PreviewTemplate.name}(INDIRECT("R[-2]C[0]",false))`
+      ]
+    ];
+    sheet.getRange(1, 1, templateTable.length, templateTable[0].length).setValues(templateTable).setBorder(
+      true,
+      true,
+      true,
+      true,
+      true,
+      true,
+      "#000000",
+      SpreadsheetApp.BorderStyle.SOLID
+    );
+    const variablesColumn = POSSIBLE_TEMPLATE_VARIABLES.map((entry) => [
+      `{{${entry}}}`
+    ]);
+    variablesColumn.unshift(["Available Variables"]);
+    sheet.getRange(6, 1, variablesColumn.length, 1).setValues(variablesColumn);
+    const infoValues = [["Info"], [EMAIL_TEMPLATE_SHEET_INFO]];
+    sheet.getRange(6, 2, infoValues.length, infoValues[0].length).setValues([["Info"], [EMAIL_TEMPLATE_SHEET_INFO]]);
+    sheet.deleteColumns(
+      sheet.getLastColumn() + 1,
+      sheet.getMaxColumns() - sheet.getLastColumn()
+    );
+    sheet.setColumnWidths(1, sheet.getLastColumn(), 500);
+    sheet.getRange("A1:B").setBackground(LIGHT_GREY);
+    sheet.getRange("2:2").setBackground(WHITE);
+    styleRangeAsHeader(sheet.getRange("1:1"));
+    styleRangeAsHeader(sheet.getRange("3:3"));
+    styleRangeAsHeader(sheet.getRange("6:6"));
+    sheet.getDataRange().setVerticalAlignment("top");
+    sheet.deleteRows(20, sheet.getMaxRows() - 20);
+  }
 };
 
 // src/initialSpreadsheetSetup.ts
-var config = [
+var sheetConfigs = [
   SkaterInfoSheetConfig,
   CoachInfoSheetConfig,
   SkaterPaymentsSheetConfig,
@@ -310,7 +414,7 @@ var config = [
 var DEFAULT_SHEET_NAME = "Sheet1";
 function initialSpreadsheetSetup() {
   const spreadsheet = SpreadsheetApp.getActiveSpreadsheet();
-  const sheets = config.map((sheetConfig) => ({
+  const sheets = sheetConfigs.map((sheetConfig) => ({
     sheetConfig,
     sheet: spreadsheet.insertSheet(sheetConfig.name)
   }));
